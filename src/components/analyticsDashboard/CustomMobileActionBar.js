@@ -5,7 +5,7 @@ import PropTypes from 'prop-types';
 import React from 'react';
 
 const CustomMobileActionBar = (props) => {
-  const { setDateRange, closePicker } = props;
+  const { setDateRange, closePicker, className } = props;
 
   const handleAction = (action) => {
     switch (action) {
@@ -26,7 +26,7 @@ const CustomMobileActionBar = (props) => {
   };
 
   return (
-    <DialogActions>
+    <DialogActions className={className}>
       <Box display='flex' flexDirection='row' alignItems='center' justifyContent='flex-start'>
         <Button color='primary' onClick={() => handleAction('last24Hours')} style={{ textTransform: 'none', marginRight: '10px' }}>
           24h
@@ -49,6 +49,7 @@ const CustomMobileActionBar = (props) => {
 CustomMobileActionBar.propTypes = {
   setDateRange: PropTypes.func.isRequired,
   closePicker: PropTypes.func.isRequired,
+  className: PropTypes.string.isRequired,
 };
 
 export default CustomMobileActionBar;
