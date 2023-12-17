@@ -1,8 +1,11 @@
 import { Button, Box } from '@mui/material';
 import DialogActions from '@mui/material/DialogActions';
 import dayjs from 'dayjs';
+import utc from 'dayjs/plugin/utc';
 import PropTypes from 'prop-types';
 import React from 'react';
+
+dayjs.extend(utc);
 
 const CustomMobileActionBar = (props) => {
   const { setDateRange, closePicker, className } = props;
@@ -10,10 +13,10 @@ const CustomMobileActionBar = (props) => {
   const handleAction = (action) => {
     switch (action) {
       case 'last24Hours':
-        setDateRange([dayjs().subtract(24, 'hour'), dayjs()]);
+        setDateRange([dayjs().utc().subtract(24, 'hour'), dayjs().utc()]);
         break;
       case 'last7Days':
-        setDateRange([dayjs().subtract(7, 'day'), dayjs()]);
+        setDateRange([dayjs().utc().subtract(7, 'day'), dayjs().utc()]);
         break;
       case 'reset':
         setDateRange([null, null]);

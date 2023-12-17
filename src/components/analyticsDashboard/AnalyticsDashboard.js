@@ -8,6 +8,7 @@ import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { DateRangePicker } from '@mui/x-date-pickers-pro/DateRangePicker';
 import dayjs from 'dayjs';
+import utc from 'dayjs/plugin/utc';
 import React, { useState, useEffect, useRef } from 'react';
 import { Line } from 'react-chartjs-2';
 
@@ -15,9 +16,11 @@ import { postHelloWorld, getActivityData, getCombinedAnalytics } from '../../ser
 
 import CustomMobileActionBar from './CustomMobileActionBar';
 
+dayjs.extend(utc);
+
 const AnalyticsDashboard = () => {
   const [userId, setUserId] = useState('');
-  const [dateRange, setDateRange] = useState([dayjs().subtract(7, 'day'), dayjs()]);
+  const [dateRange, setDateRange] = useState([dayjs().utc().subtract(7, 'day'), dayjs().utc()]);
   const [activityData, setActivityData] = useState([]);
   const [combinedAnalytics, setCombinedAnalytics] = useState({ logs: [], total: {} });
   const [error, setError] = useState('');
@@ -39,8 +42,8 @@ const AnalyticsDashboard = () => {
   const isDesktop = useMediaQuery(desktopModeMediaQuery);
 
   const shortcutsItems = isDesktop ? [
-    { label: 'Last 24 Hours', getValue: () => [dayjs().subtract(24, 'hour'), dayjs()] },
-    { label: 'Last 7 Days', getValue: () => [dayjs().subtract(7, 'day'), dayjs()] },
+    { label: 'Last 24 Hours', getValue: () => [dayjs().utc().subtract(24, 'hour'), dayjs().utc()] },
+    { label: 'Last 7 Days', getValue: () => [dayjs().utc().subtract(7, 'day'), dayjs().utc()] },
     { label: 'Reset', getValue: () => [null, null] },
   ] : [];
 
@@ -61,12 +64,12 @@ const AnalyticsDashboard = () => {
 
   const fetchActivityData = async () => {
     try {
-      const utcStartTime = dateRange[0].toISOString();
-      const utcEndTime = dateRange[1].toISOString();
+      const utcStartTime = dateRange[0].utc().startOf('day').toISOString(); // Convert to UTC and get start of day
+      const utcEndTime = dateRange[1].utc().endOf('day').toISOString(); // Convert to UTC and get end of day
       const data = await getActivityData(utcStartTime, utcEndTime, paginationModel.pageSize);
       setActivityData(data.map((item) => ({
         ...item,
-        date: dayjs(item.date).format('MMM D, YYYY'), // Format the date without time
+        date: dayjs.utc(item.date).format('MMM D, YYYY'), // Format the date without time
       })));
     } catch (err) {
       setError(`Error fetching activity data: ${err.message}`);
@@ -76,8 +79,8 @@ const AnalyticsDashboard = () => {
   const fetchCombinedAnalytics = async (page = 0) => {
     setLoading(true);
     try {
-      const utcStartTime = dateRange[0].toISOString();
-      const utcEndTime = dateRange[1].toISOString();
+      const utcStartTime = dateRange[0].utc().startOf('day').toISOString(); // Convert to UTC and get start of day
+      const utcEndTime = dateRange[1].utc().endOf('day').toISOString(); // Convert to UTC and get end of day
       const firstId = mapPageToNextCursor.current[page - 1]; // Get cursor for next page
       const data = await getCombinedAnalytics(utcStartTime, utcEndTime, firstId, paginationModel.pageSize);
       setCombinedAnalytics({ logs: data.logs, total: data.total });
@@ -174,7 +177,7 @@ const AnalyticsDashboard = () => {
                   open={openDateRangePicker}
                   value={dateRange}
                   onChange={(newValue) => {
-                    setDateRange(newValue);
+                    setDateRange(newValue.map((date) => (date ? date.utc() : null)));
                   }}
                   onOpen={() => setOpenDateRangePicker(true)}
                   onClose={() => setOpenDateRangePicker(false)}
